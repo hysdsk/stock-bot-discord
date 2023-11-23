@@ -1,7 +1,8 @@
 import asyncio
 import discord
 from configparser import ConfigParser
-from .scraper import IndexScraper
+from .scraper import IndexScraper, IpokabuScraper
+from datetime import date
 
 configparser = ConfigParser()
 configparser.read("config.ini")
@@ -11,6 +12,7 @@ token = config["infomation_token"]
 announce_channel_id = int(config["channel_id_announce"])
 client = discord.Client(intents=discord.Intents.all())
 
+
 def color_num_for_rate(rate: str):
     if rate.startswith("+"):
         return 31
@@ -18,18 +20,30 @@ def color_num_for_rate(rate: str):
         return 34
     return 37
 
+
 async def send_indicator(channel):
+    # 指数取得
     idxscr = IndexScraper()
     nikkei = idxscr.nikkei225()
     topix = idxscr.topix()
     growth = idxscr.growth250()
+
+    # ipo取得
+    iposcr = IpokabuScraper()
+    ipos = iposcr.find_urls_by_ipoday(
+        f"{date.today().month}/{date.today().day}(")
+    ipotxt = "\n".join(ipos.values()) if len(ipos) > 0 else "なし"
+
     await channel.send(f"""
-先物指数
+■先物指数
 ```ansi\n
 \u001b[0;37mNikkei225: {nikkei.close.rjust(7)}(\u001b[0;{color_num_for_rate(nikkei.rate)}m{nikkei.rate}\u001b[0;37m)
 \u001b[0;37mTopix:     {topix.close.rjust(7)}(\u001b[0;{color_num_for_rate(topix.rate)}m{topix.rate}\u001b[0;37m)
 \u001b[0;37mGrowth250: {growth.close.rjust(7)}(\u001b[0;{color_num_for_rate(growth.rate)}m{growth.rate}\u001b[0;37m)```
+■IPO
+{ipotxt}
 """)
+
 
 @client.event
 async def on_ready():
@@ -37,6 +51,7 @@ async def on_ready():
     if channel:
         await send_indicator(channel)
     await client.close()
+
 
 async def main():
     await client.start(token)
