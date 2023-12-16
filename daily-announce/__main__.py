@@ -1,8 +1,9 @@
 import asyncio
 import discord
+from datetime import date
 from configparser import ConfigParser
 from .scraper import IndexScraper, IpokabuScraper
-from datetime import date
+from .dbconnector import KabuConnector
 
 configparser = ConfigParser()
 configparser.read("config.ini")
@@ -11,6 +12,12 @@ config = configparser["DEFAULT"]
 token = config["infomation_token"]
 announce_channel_id = int(config["channel_id_announce"])
 client = discord.Client(intents=discord.Intents.all())
+
+dbconfig = configparser["database"]
+kabu = KabuConnector(
+    dbconfig["db_host"],
+    dbconfig["db_user"],
+    dbconfig["db_pswd"])
 
 
 def color_num_for_rate(rate: str):
@@ -34,6 +41,7 @@ async def send_indicator(channel):
         f"{date.today().month}/{date.today().day}(")
     ipotxt = "\n".join(ipos.values()) if len(ipos) > 0 else "なし"
 
+    # Discord通知
     await channel.send(f"""
 ■先物指数
 ```ansi\n
@@ -43,6 +51,11 @@ async def send_indicator(channel):
 ■IPO
 {ipotxt}
 """)
+    # ipo登録
+    for ipo in ipos.keys():
+        symbols = kabu.find_by_symbol(ipo)
+        if not symbols:
+            kabu.save_one(ipo)
 
 
 @client.event
