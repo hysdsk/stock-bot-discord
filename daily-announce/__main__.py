@@ -43,12 +43,12 @@ async def send_indicator(channel):
 
     # Discord通知
     await channel.send(f"""
-■先物指数
+■現在の先物指数
 ```ansi\n
 \u001b[0;37mNikkei225: {nikkei.close.rjust(7)}(\u001b[0;{color_num_for_rate(nikkei.rate)}m{nikkei.rate}\u001b[0;37m)
 \u001b[0;37mTopix:     {topix.close.rjust(7)}(\u001b[0;{color_num_for_rate(topix.rate)}m{topix.rate}\u001b[0;37m)
 \u001b[0;37mGrowth250: {growth.close.rjust(7)}(\u001b[0;{color_num_for_rate(growth.rate)}m{growth.rate}\u001b[0;37m)```
-■IPO
+■本日のIPO
 {ipotxt}
 """)
     # ipo登録
