@@ -42,6 +42,6 @@ class KabuConnector(Connector):
 
     def save_one(self, code: str):
         sql = """
-            INSERT INTO symbols (code) VALUES (%s);
+            INSERT INTO symbols (code, exchange_code) VALUES (%s, '1');
         """
         super().save(sql, params=(code,))
