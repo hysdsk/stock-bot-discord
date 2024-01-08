@@ -49,7 +49,7 @@ class IpokabuScraper(object):
                 date_cell = row.find('td')
                 if date_cell:
                     # 指定された日付と一致するか確認
-                    if date in date_cell.text:
+                    if date_cell.text.startswith(date):
                         # 同じ行内で証券コードを含むセルを見つける
                         code_cell = row.find('td', class_='td_code2')
                         if code_cell:
